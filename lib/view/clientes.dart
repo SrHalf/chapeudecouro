@@ -180,7 +180,7 @@ class CadastrarCliente extends StatefulWidget {
 }
 
 class _CadastrarClienteState extends State<CadastrarCliente> {
-  //var _editavel = false;
+  final _editavel = false;
   //  final log = Logger('CadastrarCliente');
   //CadastrarCliente({super.key});
 
