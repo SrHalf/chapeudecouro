@@ -3,7 +3,6 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:nanoid2/nanoid2.dart';
 import 'package:logging/logging.dart';
-//import 'package:path/path.dart' as p;
 import 'package:chapeudecouro/model/tabelas/clientes.dart';
 import 'package:chapeudecouro/model/tabelas/relatorios.dart';
 import 'package:chapeudecouro/model/tabelas/secoes.dart';
@@ -24,16 +23,15 @@ class AppDatabase extends _$AppDatabase {
   int get schemaVersion => 1;
   final _logger = Logger('BancoDeDados');
 
-  // Add your database methods here
   static QueryExecutor _openConnection() {
     return driftDatabase(
       name: 'chapeu.db',
       native: const DriftNativeOptions(
-        // By default, `driftDatabase` from `package:drift_flutter` stores the
-        // database files in `getApplicationDocumentsDirectory()`.
+        // Por padrão, `driftDatabase` de `package:drift_flutter` armazena os
+        // arquivos de banco de dados em `getApplicationDocumentsDirectory()`.
         databaseDirectory: getApplicationSupportDirectory,
       ),
-      // If you need web support, see https://drift.simonbinder.eu/platforms/web/
+      // Para mais sobre o Drift, acesse: https://drift.simonbinder.eu/
     );
   }
 
@@ -50,6 +48,13 @@ class AppDatabase extends _$AppDatabase {
     for (int tentativa = 0; tentativa < 5; tentativa++) {
       var id = nanoid(length: 8, alphabet: '0123456789abcdef');
       _logger.fine('Tentativa ${tentativa + 1}: Salvando cliente $id');
+      // IMPORTANTE: Eu deveria fazer com que a verificação do identificador
+      // abrangesse todas as tabelas, pois eu não apenas não quero que o
+      // identificador se repita na mesma tabela, mas que também não se repita
+      // entre tabelas.
+      //
+      // "Ah mas qual a chance?". Ok, eu não tenho resposta pra isso,
+      // apenas ansiedade.
 
       try {
         final resultadoId = await into(cliente).insert(
@@ -66,35 +71,13 @@ class AppDatabase extends _$AppDatabase {
         // Usar 'catch (erro)' sem o 'on Exception' garante que capturamos
         // QUALQUER erro ou falha do SQLite (SqliteException, NullThrownError, etc.)
         _logger.severe('Erro crítico no banco de dados:', erro, stackTrace);
-        rethrow; // Se for outro tipo de erro (ex: coluna faltando), para o loop para você ver o bug
+        // Se for outro tipo de erro (ex: coluna faltando), para o loop para ver o bug.
+        rethrow;
       }
     }
     throw Exception(
       'Não foi possível gerar um identificador único após 5 tentativas.',
     );
-
-    // while (true) {
-    //   var id = nanoid(length: 8, alphabet: '0123456789abcdef');
-    //   try {
-    //     _logger.fine('Salvando cliente $id');
-    //     return await into(
-    //       cliente,
-    //     ).insert(clienteCompanion.copyWith(identificador: Value(id)));
-    //   } on Exception catch (erro, stackTrace) {
-    //     // IMPORTANTE: Eu deveria fazer com que a verificação do identificador
-    //     // abrangesse todas as tabelas, pois eu não apenas não quero que o
-    //     // identificador se repita na mesma tabela, mas que também não se repita
-    //     // entre tabelas.
-    //     //
-    //     // "Ah mas qual a chance?". Ok, eu não tenho resposta pra isso,
-    //     // apenas ansiedade.
-    //     _logger.severe(
-    //       'O identificador gerado já existe! Gerando outro..',
-    //       erro,
-    //       stackTrace,
-    //     );
-    //   }
-    // }
   }
 
   Future atualizarCliente(ClienteData clienteAtualizado) async {

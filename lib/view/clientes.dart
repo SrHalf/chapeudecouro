@@ -19,6 +19,9 @@ class _ListarClientesState extends State<ListarClientes> {
   final _ids = [];
   late Future<List<ClienteData>> _futureClientes;
 
+  // Este método existe porque a listagem precisa ser feita mais de uma vez ao
+  // longo do uso da tela pelo usuário. 1. Na abertura; 2. Após voltar da tela
+  // de atualização/inserção.
   void _listarClientes() async {
     _futureClientes = context.read<AppDatabase>().listarClientes();
   }
@@ -92,8 +95,9 @@ class _ListarClientesState extends State<ListarClientes> {
             },
           );
           setState(() {
+            // Atualiza a lista após voltar da edição.
             _listarClientes();
-          }); // Atualiza a tela após voltar do modal (ou deveria, né).
+          });
         },
         leading: GestureDetector(
           onTap: () {
@@ -189,10 +193,6 @@ class CadastrarCliente extends StatefulWidget {
 }
 
 class _CadastrarClienteState extends State<CadastrarCliente> {
-  //  final _editavel = false;
-  //  final log = Logger('CadastrarCliente');
-  //CadastrarCliente({super.key});
-
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _identificadorController;
   late final TextEditingController _nomeController;
