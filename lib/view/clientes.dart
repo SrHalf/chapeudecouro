@@ -1,4 +1,5 @@
 import 'package:chapeudecouro/widgets/customizados.dart';
+import 'package:chapeudecouro/widgets/modais.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,11 @@ class ListarClientes extends StatefulWidget {
 
 class _ListarClientesState extends State<ListarClientes> {
   final _ids = [];
+  late Future<List<ClienteData>> _futureClientes;
+
+  void _listarClientes() async {
+    _futureClientes = context.read<AppDatabase>().listarClientes();
+  }
 
   void selecionar(int id) {
     setState(() {
@@ -66,6 +72,29 @@ class _ListarClientesState extends State<ListarClientes> {
     return Card(
       color: cor,
       child: ListTile(
+        onTap: () async {
+          await showModalBottomSheet(
+            context: context,
+            builder: (context) {
+              return ModalOpcoesTabela(
+                onItemPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CadastrarCliente(cliente: cliente),
+                    ),
+                  );
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                  }
+                },
+              );
+            },
+          );
+          setState(() {
+            _listarClientes();
+          }); // Atualiza a tela após voltar do modal (ou deveria, né).
+        },
         leading: GestureDetector(
           onTap: () {
             selecionar(cliente.id);
@@ -76,6 +105,12 @@ class _ListarClientesState extends State<ListarClientes> {
         subtitle: Text(subtitulo),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _listarClientes();
   }
 
   @override
@@ -112,7 +147,7 @@ class _ListarClientesState extends State<ListarClientes> {
       body: Padding(
         padding: EdgeInsets.all(8.0),
         child: FutureBuilder(
-          future: context.read<AppDatabase>().listarClientes(),
+          future: _futureClientes,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               List<ClienteData> clientes = snapshot.data as List<ClienteData>;
@@ -124,36 +159,9 @@ class _ListarClientesState extends State<ListarClientes> {
                 itemBuilder: (context, index) {
                   return Dismissible(
                     key: Key(clientes[index].id.toString()),
-                    background: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              alignment: Alignment.centerLeft,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.archive),
-                                  const Text("Arquivar"),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              alignment: Alignment.centerRight,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.archive),
-                                  Text("Arquivar"),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    background: Container(
+                      color: Colors.red,
+                      child: Icon(Icons.archive),
                     ),
                     child: _getListTile(context, index, clientes[index]),
                   );
@@ -173,26 +181,44 @@ class _ListarClientesState extends State<ListarClientes> {
 
 // ========================== TELA CADASTRAR CLIENTE ==========================
 class CadastrarCliente extends StatefulWidget {
-  const CadastrarCliente({super.key});
+  final ClienteData? cliente;
+  const CadastrarCliente({super.key, this.cliente});
 
   @override
   State<CadastrarCliente> createState() => _CadastrarClienteState();
 }
 
 class _CadastrarClienteState extends State<CadastrarCliente> {
-  final _editavel = false;
+  //  final _editavel = false;
   //  final log = Logger('CadastrarCliente');
   //CadastrarCliente({super.key});
 
   final _formKey = GlobalKey<FormState>();
-  final _identificadorController = TextEditingController();
-  final _nomeController = TextEditingController();
-  final _empresaController = TextEditingController();
-  final _telefoneController = PhoneController(
-    initialValue: PhoneNumber.parse("+55"),
-  );
-  final _emailController = TextEditingController();
-  final _anotacoesController = TextEditingController();
+  late final TextEditingController _identificadorController;
+  late final TextEditingController _nomeController;
+  late final TextEditingController _empresaController;
+  late final PhoneController _telefoneController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _anotacoesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _identificadorController = TextEditingController(
+      text: widget.cliente?.identificador ?? '',
+    );
+    _nomeController = TextEditingController(text: widget.cliente?.nome ?? '');
+    _empresaController = TextEditingController(
+      text: widget.cliente?.empresa ?? '',
+    );
+    _telefoneController = PhoneController(
+      initialValue: PhoneNumber.parse(widget.cliente?.telefone ?? '+55'),
+    );
+    _emailController = TextEditingController(text: widget.cliente?.email ?? '');
+    _anotacoesController = TextEditingController(
+      text: widget.cliente?.anotacoes ?? '',
+    );
+  }
 
   @override
   void dispose() {
@@ -218,7 +244,7 @@ class _CadastrarClienteState extends State<CadastrarCliente> {
           key: _formKey,
           child: Column(
             children: [
-              if (_editavel)
+              if (widget.cliente != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: CampoIdentificador(
@@ -264,7 +290,19 @@ class _CadastrarClienteState extends State<CadastrarCliente> {
                 criadoEm: Value(agora),
                 atualizadoEm: Value(agora),
               );
-              context.read<AppDatabase>().inserirCliente(cliente);
+              if (widget.cliente != null) {
+                var clienteAtualizado = widget.cliente!.copyWith(
+                  nome: _nomeController.text,
+                  empresa: Value(_empresaController.text),
+                  telefone: Value(_telefoneController.value.toString()),
+                  email: Value(_emailController.text),
+                  anotacoes: Value(_anotacoesController.text),
+                  atualizadoEm: agora,
+                );
+                context.read<AppDatabase>().atualizarCliente(clienteAtualizado);
+              } else {
+                context.read<AppDatabase>().inserirCliente(cliente);
+              }
               Navigator.pop(context);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(

@@ -96,4 +96,8 @@ class AppDatabase extends _$AppDatabase {
     //   }
     // }
   }
+
+  Future atualizarCliente(ClienteData clienteAtualizado) async {
+    await update(cliente).replace(clienteAtualizado);
+  }
 }
