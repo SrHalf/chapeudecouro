@@ -243,6 +243,7 @@ class _CadastrarClienteState extends State<CadastrarCliente> {
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (widget.cliente != null)
                 Padding(
@@ -271,6 +272,22 @@ class _CadastrarClienteState extends State<CadastrarCliente> {
 
               CampoAnotacoes(controlador: _anotacoesController),
               const SizedBox(height: 16),
+
+              if (widget.cliente != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Criado em: ${widget.cliente!.criadoEm}',
+                      style: TextStyle(fontSize: 12, color: Colors.black),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Atualizado em: ${widget.cliente!.atualizadoEm}',
+                      style: TextStyle(fontSize: 12, color: Colors.black),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
