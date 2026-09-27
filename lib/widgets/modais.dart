@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 
 class ModalOpcoesTabela extends StatelessWidget {
-  final VoidCallback? onItemPressed;
-  const ModalOpcoesTabela({super.key, required this.onItemPressed});
+  final VoidCallback? callbackEditar;
+  final VoidCallback? callbackLigar;
+  final VoidCallback? callbackEnviarEmail;
+  const ModalOpcoesTabela({
+    super.key,
+    required this.callbackEditar,
+    required this.callbackLigar,
+    required this.callbackEnviarEmail,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +35,17 @@ class ModalOpcoesTabela extends StatelessWidget {
                   ListTile(
                     leading: Icon(Icons.edit),
                     title: Text("Editar"),
-                    onTap: onItemPressed,
+                    onTap: callbackEditar,
                   ),
                   ListTile(
-                    leading: Icon(Icons.copy),
-                    title: Text("Copiar"),
-                    onTap: onItemPressed,
+                    leading: Icon(Icons.phone),
+                    title: Text("Ligar"),
+                    onTap: callbackLigar,
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.email),
+                    title: Text("Enviar E-mail"),
+                    onTap: callbackEnviarEmail,
                   ),
                 ],
               ),

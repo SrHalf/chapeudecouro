@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:chapeudecouro/model/banco.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // ========================== TELA LISTAR CLIENTES ==========================
 class ListarClientes extends StatefulWidget {
@@ -18,6 +19,18 @@ class ListarClientes extends StatefulWidget {
 class _ListarClientesState extends State<ListarClientes> {
   final _ids = [];
   late Future<List<ClienteData>> _futureClientes;
+  bool _telefoneDisponivel = false;
+  bool _emailDisponivel = false;
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
+    await launchUrl(launchUri);
+  }
+
+  Future<void> _sendEmail(String emailAddress) async {
+    final Uri launchUri = Uri(scheme: 'mailto', path: emailAddress);
+    await launchUrl(launchUri);
+  }
 
   // Este método existe porque a listagem precisa ser feita mais de uma vez ao
   // longo do uso da tela pelo usuário. 1. Na abertura; 2. Após voltar da tela
@@ -64,6 +77,10 @@ class _ListarClientesState extends State<ListarClientes> {
     var titulo = "${cliente.nome} - ${cliente.empresa}";
     var subtitulo = "${cliente.identificador} - ${cliente.email}";
     var cor = Colors.white;
+    final podeLigar =
+        _telefoneDisponivel && (cliente.telefone?.isNotEmpty ?? false);
+    final podeEnviarEmail =
+        _emailDisponivel && (cliente.email?.isNotEmpty ?? false);
     Widget simbolo = Text(
       titulo.substring(0, 1).toUpperCase(),
       style: TextStyle(color: Colors.white),
@@ -80,7 +97,7 @@ class _ListarClientesState extends State<ListarClientes> {
             context: context,
             builder: (context) {
               return ModalOpcoesTabela(
-                onItemPressed: () async {
+                callbackEditar: () async {
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -91,6 +108,26 @@ class _ListarClientesState extends State<ListarClientes> {
                     Navigator.pop(context);
                   }
                 },
+                callbackLigar: podeLigar
+                    ? () {
+                        final telefone = cliente.telefone;
+                        if (telefone != null) _makePhoneCall(telefone);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Aguarde..')),
+                        );
+                        Navigator.pop(context);
+                      }
+                    : null,
+                callbackEnviarEmail: podeEnviarEmail
+                    ? () {
+                        final email = cliente.email;
+                        if (email != null) _sendEmail(email);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Aguarde..')),
+                        );
+                        Navigator.pop(context);
+                      }
+                    : null,
               );
             },
           );
@@ -115,6 +152,19 @@ class _ListarClientesState extends State<ListarClientes> {
   void initState() {
     super.initState();
     _listarClientes();
+    canLaunchUrl(Uri(scheme: 'tel', path: '123')).then((bool result) {
+      setState(() {
+        _telefoneDisponivel = result;
+      });
+    });
+    //
+    canLaunchUrl(Uri(scheme: 'mailto', path: 'example@example.com')).then((
+      bool result,
+    ) {
+      setState(() {
+        _emailDisponivel = result;
+      });
+    });
   }
 
   @override
