@@ -211,26 +211,7 @@ class _ListarClientesState extends State<ListarClientes> {
               return ListView.builder(
                 itemCount: clientes.length,
                 itemBuilder: (context, index) {
-                  return Dismissible(
-                    key: Key(clientes[index].id.toString()),
-                    background: Container(
-                      color: Colors.red,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: EdgeInsetsGeometry.all(8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [Icon(Icons.archive), Text("Arquivar")],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    secondaryBackground: Container(color: Colors.green),
-                    child: _getListTile(context, index, clientes[index]),
-                  );
+                  return _getListTile(context, index, clientes[index]);
                 },
               );
             } else if (snapshot.hasError) {
