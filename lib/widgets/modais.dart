@@ -4,11 +4,13 @@ class ModalOpcoesTabela extends StatelessWidget {
   final VoidCallback? callbackEditar;
   final VoidCallback? callbackLigar;
   final VoidCallback? callbackEnviarEmail;
+  final VoidCallback? callbackArquivar;
   const ModalOpcoesTabela({
     super.key,
     required this.callbackEditar,
     required this.callbackLigar,
     required this.callbackEnviarEmail,
+    required this.callbackArquivar,
   });
 
   @override
@@ -46,6 +48,11 @@ class ModalOpcoesTabela extends StatelessWidget {
                     leading: Icon(Icons.email),
                     title: Text("Enviar E-mail"),
                     onTap: callbackEnviarEmail,
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.archive),
+                    title: Text("Arquivar"),
+                    onTap: callbackArquivar,
                   ),
                 ],
               ),

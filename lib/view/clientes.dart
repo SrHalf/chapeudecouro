@@ -128,6 +128,7 @@ class _ListarClientesState extends State<ListarClientes> {
                         Navigator.pop(context);
                       }
                     : null,
+                callbackArquivar: null,
               );
             },
           );
