@@ -10,6 +10,7 @@ class Cliente extends Table {
   TextColumn get empresa => text().nullable().unique()();
   TextColumn get telefone => text().nullable().unique()();
   TextColumn get email => text().nullable().unique()();
+  BoolColumn get arquivado => boolean().withDefault(const Constant(false))();
   TextColumn get anotacoes => text().nullable()();
   DateTimeColumn get criadoEm => dateTime()();
   DateTimeColumn get atualizadoEm => dateTime()();

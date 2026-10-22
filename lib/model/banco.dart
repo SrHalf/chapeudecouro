@@ -35,8 +35,10 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<List<ClienteData>> listarClientes() {
-    return (select(cliente)).get();
+  Future<List<ClienteData>> listarClientes([bool arquivado = false]) {
+    return (select(
+      cliente,
+    )..where((tbl) => tbl.arquivado.equals(arquivado))).get();
   }
 
   Future<void> limparTabelaClientes() async {
@@ -82,5 +84,15 @@ class AppDatabase extends _$AppDatabase {
 
   Future atualizarCliente(ClienteData clienteAtualizado) async {
     await update(cliente).replace(clienteAtualizado);
+  }
+
+  Future arquivarCliente(
+    ClienteData clienteArquivado, [
+    bool arquivar = true,
+  ]) async {
+    await (update(cliente)..where(
+          (tbl) => tbl.identificador.equals(clienteArquivado.identificador),
+        ))
+        .write(ClienteCompanion(arquivado: Value(arquivar)));
   }
 }

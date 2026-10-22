@@ -128,7 +128,15 @@ class _ListarClientesState extends State<ListarClientes> {
                         Navigator.pop(context);
                       }
                     : null,
-                callbackArquivar: null,
+                callbackArquivar: () {
+                  setState(() {
+                    context.read<AppDatabase>().arquivarCliente(cliente);
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Arquivado.')));
+                    Navigator.pop(context);
+                  });
+                },
               );
             },
           );
@@ -190,11 +198,15 @@ class _ListarClientesState extends State<ListarClientes> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => CadastrarCliente()),
               );
+              setState(() {
+                // Atualiza a lista após voltar da tela de cadastro.
+                _listarClientes();
+              });
             },
           ),
         ],

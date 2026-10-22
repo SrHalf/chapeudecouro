@@ -76,6 +76,21 @@ class $ClienteTable extends Cliente with TableInfo<$ClienteTable, ClienteData> {
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
+  static const VerificationMeta _arquivadoMeta = const VerificationMeta(
+    'arquivado',
+  );
+  @override
+  late final GeneratedColumn<bool> arquivado = GeneratedColumn<bool>(
+    'arquivado',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("arquivado" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _anotacoesMeta = const VerificationMeta(
     'anotacoes',
   );
@@ -117,6 +132,7 @@ class $ClienteTable extends Cliente with TableInfo<$ClienteTable, ClienteData> {
     empresa,
     telefone,
     email,
+    arquivado,
     anotacoes,
     criadoEm,
     atualizadoEm,
@@ -171,6 +187,12 @@ class $ClienteTable extends Cliente with TableInfo<$ClienteTable, ClienteData> {
       context.handle(
         _emailMeta,
         email.isAcceptableOrUnknown(data['email']!, _emailMeta),
+      );
+    }
+    if (data.containsKey('arquivado')) {
+      context.handle(
+        _arquivadoMeta,
+        arquivado.isAcceptableOrUnknown(data['arquivado']!, _arquivadoMeta),
       );
     }
     if (data.containsKey('anotacoes')) {
@@ -231,6 +253,10 @@ class $ClienteTable extends Cliente with TableInfo<$ClienteTable, ClienteData> {
         DriftSqlType.string,
         data['${effectivePrefix}email'],
       ),
+      arquivado: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}arquivado'],
+      )!,
       anotacoes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}anotacoes'],
@@ -259,6 +285,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
   final String? empresa;
   final String? telefone;
   final String? email;
+  final bool arquivado;
   final String? anotacoes;
   final DateTime criadoEm;
   final DateTime atualizadoEm;
@@ -269,6 +296,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
     this.empresa,
     this.telefone,
     this.email,
+    required this.arquivado,
     this.anotacoes,
     required this.criadoEm,
     required this.atualizadoEm,
@@ -288,6 +316,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
     if (!nullToAbsent || email != null) {
       map['email'] = Variable<String>(email);
     }
+    map['arquivado'] = Variable<bool>(arquivado);
     if (!nullToAbsent || anotacoes != null) {
       map['anotacoes'] = Variable<String>(anotacoes);
     }
@@ -310,6 +339,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
       email: email == null && nullToAbsent
           ? const Value.absent()
           : Value(email),
+      arquivado: Value(arquivado),
       anotacoes: anotacoes == null && nullToAbsent
           ? const Value.absent()
           : Value(anotacoes),
@@ -330,6 +360,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
       empresa: serializer.fromJson<String?>(json['empresa']),
       telefone: serializer.fromJson<String?>(json['telefone']),
       email: serializer.fromJson<String?>(json['email']),
+      arquivado: serializer.fromJson<bool>(json['arquivado']),
       anotacoes: serializer.fromJson<String?>(json['anotacoes']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
@@ -345,6 +376,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
       'empresa': serializer.toJson<String?>(empresa),
       'telefone': serializer.toJson<String?>(telefone),
       'email': serializer.toJson<String?>(email),
+      'arquivado': serializer.toJson<bool>(arquivado),
       'anotacoes': serializer.toJson<String?>(anotacoes),
       'criadoEm': serializer.toJson<DateTime>(criadoEm),
       'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
@@ -358,6 +390,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
     Value<String?> empresa = const Value.absent(),
     Value<String?> telefone = const Value.absent(),
     Value<String?> email = const Value.absent(),
+    bool? arquivado,
     Value<String?> anotacoes = const Value.absent(),
     DateTime? criadoEm,
     DateTime? atualizadoEm,
@@ -368,6 +401,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
     empresa: empresa.present ? empresa.value : this.empresa,
     telefone: telefone.present ? telefone.value : this.telefone,
     email: email.present ? email.value : this.email,
+    arquivado: arquivado ?? this.arquivado,
     anotacoes: anotacoes.present ? anotacoes.value : this.anotacoes,
     criadoEm: criadoEm ?? this.criadoEm,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
@@ -382,6 +416,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
       empresa: data.empresa.present ? data.empresa.value : this.empresa,
       telefone: data.telefone.present ? data.telefone.value : this.telefone,
       email: data.email.present ? data.email.value : this.email,
+      arquivado: data.arquivado.present ? data.arquivado.value : this.arquivado,
       anotacoes: data.anotacoes.present ? data.anotacoes.value : this.anotacoes,
       criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
       atualizadoEm: data.atualizadoEm.present
@@ -399,6 +434,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
           ..write('empresa: $empresa, ')
           ..write('telefone: $telefone, ')
           ..write('email: $email, ')
+          ..write('arquivado: $arquivado, ')
           ..write('anotacoes: $anotacoes, ')
           ..write('criadoEm: $criadoEm, ')
           ..write('atualizadoEm: $atualizadoEm')
@@ -414,6 +450,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
     empresa,
     telefone,
     email,
+    arquivado,
     anotacoes,
     criadoEm,
     atualizadoEm,
@@ -428,6 +465,7 @@ class ClienteData extends DataClass implements Insertable<ClienteData> {
           other.empresa == this.empresa &&
           other.telefone == this.telefone &&
           other.email == this.email &&
+          other.arquivado == this.arquivado &&
           other.anotacoes == this.anotacoes &&
           other.criadoEm == this.criadoEm &&
           other.atualizadoEm == this.atualizadoEm);
@@ -440,6 +478,7 @@ class ClienteCompanion extends UpdateCompanion<ClienteData> {
   final Value<String?> empresa;
   final Value<String?> telefone;
   final Value<String?> email;
+  final Value<bool> arquivado;
   final Value<String?> anotacoes;
   final Value<DateTime> criadoEm;
   final Value<DateTime> atualizadoEm;
@@ -450,6 +489,7 @@ class ClienteCompanion extends UpdateCompanion<ClienteData> {
     this.empresa = const Value.absent(),
     this.telefone = const Value.absent(),
     this.email = const Value.absent(),
+    this.arquivado = const Value.absent(),
     this.anotacoes = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
@@ -461,6 +501,7 @@ class ClienteCompanion extends UpdateCompanion<ClienteData> {
     this.empresa = const Value.absent(),
     this.telefone = const Value.absent(),
     this.email = const Value.absent(),
+    this.arquivado = const Value.absent(),
     this.anotacoes = const Value.absent(),
     required DateTime criadoEm,
     required DateTime atualizadoEm,
@@ -475,6 +516,7 @@ class ClienteCompanion extends UpdateCompanion<ClienteData> {
     Expression<String>? empresa,
     Expression<String>? telefone,
     Expression<String>? email,
+    Expression<bool>? arquivado,
     Expression<String>? anotacoes,
     Expression<DateTime>? criadoEm,
     Expression<DateTime>? atualizadoEm,
@@ -486,6 +528,7 @@ class ClienteCompanion extends UpdateCompanion<ClienteData> {
       if (empresa != null) 'empresa': empresa,
       if (telefone != null) 'telefone': telefone,
       if (email != null) 'email': email,
+      if (arquivado != null) 'arquivado': arquivado,
       if (anotacoes != null) 'anotacoes': anotacoes,
       if (criadoEm != null) 'criado_em': criadoEm,
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
@@ -499,6 +542,7 @@ class ClienteCompanion extends UpdateCompanion<ClienteData> {
     Value<String?>? empresa,
     Value<String?>? telefone,
     Value<String?>? email,
+    Value<bool>? arquivado,
     Value<String?>? anotacoes,
     Value<DateTime>? criadoEm,
     Value<DateTime>? atualizadoEm,
@@ -510,6 +554,7 @@ class ClienteCompanion extends UpdateCompanion<ClienteData> {
       empresa: empresa ?? this.empresa,
       telefone: telefone ?? this.telefone,
       email: email ?? this.email,
+      arquivado: arquivado ?? this.arquivado,
       anotacoes: anotacoes ?? this.anotacoes,
       criadoEm: criadoEm ?? this.criadoEm,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
@@ -537,6 +582,9 @@ class ClienteCompanion extends UpdateCompanion<ClienteData> {
     if (email.present) {
       map['email'] = Variable<String>(email.value);
     }
+    if (arquivado.present) {
+      map['arquivado'] = Variable<bool>(arquivado.value);
+    }
     if (anotacoes.present) {
       map['anotacoes'] = Variable<String>(anotacoes.value);
     }
@@ -558,6 +606,7 @@ class ClienteCompanion extends UpdateCompanion<ClienteData> {
           ..write('empresa: $empresa, ')
           ..write('telefone: $telefone, ')
           ..write('email: $email, ')
+          ..write('arquivado: $arquivado, ')
           ..write('anotacoes: $anotacoes, ')
           ..write('criadoEm: $criadoEm, ')
           ..write('atualizadoEm: $atualizadoEm')
@@ -3544,6 +3593,7 @@ typedef $$ClienteTableCreateCompanionBuilder =
       Value<String?> empresa,
       Value<String?> telefone,
       Value<String?> email,
+      Value<bool> arquivado,
       Value<String?> anotacoes,
       required DateTime criadoEm,
       required DateTime atualizadoEm,
@@ -3556,6 +3606,7 @@ typedef $$ClienteTableUpdateCompanionBuilder =
       Value<String?> empresa,
       Value<String?> telefone,
       Value<String?> email,
+      Value<bool> arquivado,
       Value<String?> anotacoes,
       Value<DateTime> criadoEm,
       Value<DateTime> atualizadoEm,
@@ -3620,6 +3671,11 @@ class $$ClienteTableFilterComposer
 
   ColumnFilters<String> get email => $composableBuilder(
     column: $table.email,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3703,6 +3759,11 @@ class $$ClienteTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get anotacoes => $composableBuilder(
     column: $table.anotacoes,
     builder: (column) => ColumnOrderings(column),
@@ -3747,6 +3808,9 @@ class $$ClienteTableAnnotationComposer
 
   GeneratedColumn<String> get email =>
       $composableBuilder(column: $table.email, builder: (column) => column);
+
+  GeneratedColumn<bool> get arquivado =>
+      $composableBuilder(column: $table.arquivado, builder: (column) => column);
 
   GeneratedColumn<String> get anotacoes =>
       $composableBuilder(column: $table.anotacoes, builder: (column) => column);
@@ -3819,6 +3883,7 @@ class $$ClienteTableTableManager
                 Value<String?> empresa = const Value.absent(),
                 Value<String?> telefone = const Value.absent(),
                 Value<String?> email = const Value.absent(),
+                Value<bool> arquivado = const Value.absent(),
                 Value<String?> anotacoes = const Value.absent(),
                 Value<DateTime> criadoEm = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
@@ -3829,6 +3894,7 @@ class $$ClienteTableTableManager
                 empresa: empresa,
                 telefone: telefone,
                 email: email,
+                arquivado: arquivado,
                 anotacoes: anotacoes,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
@@ -3841,6 +3907,7 @@ class $$ClienteTableTableManager
                 Value<String?> empresa = const Value.absent(),
                 Value<String?> telefone = const Value.absent(),
                 Value<String?> email = const Value.absent(),
+                Value<bool> arquivado = const Value.absent(),
                 Value<String?> anotacoes = const Value.absent(),
                 required DateTime criadoEm,
                 required DateTime atualizadoEm,
@@ -3851,6 +3918,7 @@ class $$ClienteTableTableManager
                 empresa: empresa,
                 telefone: telefone,
                 email: email,
+                arquivado: arquivado,
                 anotacoes: anotacoes,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
