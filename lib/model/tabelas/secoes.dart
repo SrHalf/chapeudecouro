@@ -14,4 +14,6 @@ class Secao extends Table {
   IntColumn get ordem => integer()();
   DateTimeColumn get criadoEm => dateTime()();
   DateTimeColumn get atualizadoEm => dateTime()();
+  BoolColumn get arquivado => boolean().withDefault(const Constant(false))();
+  TextColumn get anotacoes => text().nullable()();
 }

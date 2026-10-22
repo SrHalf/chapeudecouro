@@ -17,4 +17,6 @@ class Relatorio extends Table {
   DateTimeColumn get dataFim => dateTime().nullable()();
   DateTimeColumn get criadoEm => dateTime()();
   DateTimeColumn get atualizadoEm => dateTime()();
+  BoolColumn get arquivado => boolean().withDefault(const Constant(false))();
+  TextColumn get anotacoes => text().nullable()();
 }

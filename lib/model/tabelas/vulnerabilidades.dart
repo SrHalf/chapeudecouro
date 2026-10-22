@@ -2,6 +2,9 @@ import 'package:drift/drift.dart';
 import 'package:chapeudecouro/model/tabelas/relatorios.dart';
 
 class Vulnerabilidade extends Table {
+  @override
+  String get tableName => 'vulnerabilidades';
+
   IntColumn get id => integer().autoIncrement()();
   TextColumn get identificador => text().unique()();
   IntColumn get secaoId => integer().references(Relatorio, #id)();
@@ -17,4 +20,6 @@ class Vulnerabilidade extends Table {
   IntColumn get status => integer()();
   DateTimeColumn get criadoEm => dateTime()();
   DateTimeColumn get atualizadoEm => dateTime()();
+  BoolColumn get arquivado => boolean().withDefault(const Constant(false))();
+  TextColumn get anotacoes => text().nullable()();
 }

@@ -2,6 +2,9 @@ import 'package:drift/drift.dart';
 import 'package:chapeudecouro/model/tabelas/vulnerabilidades.dart';
 
 class Evidencia extends Table {
+  @override
+  String get tableName => 'evidencias';
+
   IntColumn get id => integer().autoIncrement()();
   TextColumn get identificador => text().unique()();
   IntColumn get vulnerabilidadeId =>
@@ -15,4 +18,6 @@ class Evidencia extends Table {
 
   DateTimeColumn get criadoEm => dateTime()();
   DateTimeColumn get atualizadoEm => dateTime()();
+  BoolColumn get arquivado => boolean().withDefault(const Constant(false))();
+  TextColumn get anotacoes => text().nullable()();
 }

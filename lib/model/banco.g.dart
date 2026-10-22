@@ -724,6 +724,32 @@ class $RelatorioTable extends Relatorio
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _arquivadoMeta = const VerificationMeta(
+    'arquivado',
+  );
+  @override
+  late final GeneratedColumn<bool> arquivado = GeneratedColumn<bool>(
+    'arquivado',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("arquivado" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _anotacoesMeta = const VerificationMeta(
+    'anotacoes',
+  );
+  @override
+  late final GeneratedColumn<String> anotacoes = GeneratedColumn<String>(
+    'anotacoes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -735,6 +761,8 @@ class $RelatorioTable extends Relatorio
     dataFim,
     criadoEm,
     atualizadoEm,
+    arquivado,
+    anotacoes,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -822,6 +850,18 @@ class $RelatorioTable extends Relatorio
     } else if (isInserting) {
       context.missing(_atualizadoEmMeta);
     }
+    if (data.containsKey('arquivado')) {
+      context.handle(
+        _arquivadoMeta,
+        arquivado.isAcceptableOrUnknown(data['arquivado']!, _arquivadoMeta),
+      );
+    }
+    if (data.containsKey('anotacoes')) {
+      context.handle(
+        _anotacoesMeta,
+        anotacoes.isAcceptableOrUnknown(data['anotacoes']!, _anotacoesMeta),
+      );
+    }
     return context;
   }
 
@@ -867,6 +907,14 @@ class $RelatorioTable extends Relatorio
         DriftSqlType.dateTime,
         data['${effectivePrefix}atualizado_em'],
       )!,
+      arquivado: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}arquivado'],
+      )!,
+      anotacoes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}anotacoes'],
+      ),
     );
   }
 
@@ -886,6 +934,8 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
   final DateTime? dataFim;
   final DateTime criadoEm;
   final DateTime atualizadoEm;
+  final bool arquivado;
+  final String? anotacoes;
   const RelatorioData({
     required this.id,
     required this.identificador,
@@ -896,6 +946,8 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
     this.dataFim,
     required this.criadoEm,
     required this.atualizadoEm,
+    required this.arquivado,
+    this.anotacoes,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -911,6 +963,10 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
     }
     map['criado_em'] = Variable<DateTime>(criadoEm);
     map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['arquivado'] = Variable<bool>(arquivado);
+    if (!nullToAbsent || anotacoes != null) {
+      map['anotacoes'] = Variable<String>(anotacoes);
+    }
     return map;
   }
 
@@ -927,6 +983,10 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
           : Value(dataFim),
       criadoEm: Value(criadoEm),
       atualizadoEm: Value(atualizadoEm),
+      arquivado: Value(arquivado),
+      anotacoes: anotacoes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anotacoes),
     );
   }
 
@@ -945,6 +1005,8 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
       dataFim: serializer.fromJson<DateTime?>(json['dataFim']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      arquivado: serializer.fromJson<bool>(json['arquivado']),
+      anotacoes: serializer.fromJson<String?>(json['anotacoes']),
     );
   }
   @override
@@ -960,6 +1022,8 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
       'dataFim': serializer.toJson<DateTime?>(dataFim),
       'criadoEm': serializer.toJson<DateTime>(criadoEm),
       'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'arquivado': serializer.toJson<bool>(arquivado),
+      'anotacoes': serializer.toJson<String?>(anotacoes),
     };
   }
 
@@ -973,6 +1037,8 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
     Value<DateTime?> dataFim = const Value.absent(),
     DateTime? criadoEm,
     DateTime? atualizadoEm,
+    bool? arquivado,
+    Value<String?> anotacoes = const Value.absent(),
   }) => RelatorioData(
     id: id ?? this.id,
     identificador: identificador ?? this.identificador,
@@ -983,6 +1049,8 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
     dataFim: dataFim.present ? dataFim.value : this.dataFim,
     criadoEm: criadoEm ?? this.criadoEm,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    arquivado: arquivado ?? this.arquivado,
+    anotacoes: anotacoes.present ? anotacoes.value : this.anotacoes,
   );
   RelatorioData copyWithCompanion(RelatorioCompanion data) {
     return RelatorioData(
@@ -1003,6 +1071,8 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
       atualizadoEm: data.atualizadoEm.present
           ? data.atualizadoEm.value
           : this.atualizadoEm,
+      arquivado: data.arquivado.present ? data.arquivado.value : this.arquivado,
+      anotacoes: data.anotacoes.present ? data.anotacoes.value : this.anotacoes,
     );
   }
 
@@ -1017,7 +1087,9 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
           ..write('dataInicio: $dataInicio, ')
           ..write('dataFim: $dataFim, ')
           ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('arquivado: $arquivado, ')
+          ..write('anotacoes: $anotacoes')
           ..write(')'))
         .toString();
   }
@@ -1033,6 +1105,8 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
     dataFim,
     criadoEm,
     atualizadoEm,
+    arquivado,
+    anotacoes,
   );
   @override
   bool operator ==(Object other) =>
@@ -1046,7 +1120,9 @@ class RelatorioData extends DataClass implements Insertable<RelatorioData> {
           other.dataInicio == this.dataInicio &&
           other.dataFim == this.dataFim &&
           other.criadoEm == this.criadoEm &&
-          other.atualizadoEm == this.atualizadoEm);
+          other.atualizadoEm == this.atualizadoEm &&
+          other.arquivado == this.arquivado &&
+          other.anotacoes == this.anotacoes);
 }
 
 class RelatorioCompanion extends UpdateCompanion<RelatorioData> {
@@ -1059,6 +1135,8 @@ class RelatorioCompanion extends UpdateCompanion<RelatorioData> {
   final Value<DateTime?> dataFim;
   final Value<DateTime> criadoEm;
   final Value<DateTime> atualizadoEm;
+  final Value<bool> arquivado;
+  final Value<String?> anotacoes;
   const RelatorioCompanion({
     this.id = const Value.absent(),
     this.identificador = const Value.absent(),
@@ -1069,6 +1147,8 @@ class RelatorioCompanion extends UpdateCompanion<RelatorioData> {
     this.dataFim = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
+    this.arquivado = const Value.absent(),
+    this.anotacoes = const Value.absent(),
   });
   RelatorioCompanion.insert({
     this.id = const Value.absent(),
@@ -1080,6 +1160,8 @@ class RelatorioCompanion extends UpdateCompanion<RelatorioData> {
     this.dataFim = const Value.absent(),
     required DateTime criadoEm,
     required DateTime atualizadoEm,
+    this.arquivado = const Value.absent(),
+    this.anotacoes = const Value.absent(),
   }) : identificador = Value(identificador),
        clienteId = Value(clienteId),
        tipoRelatorio = Value(tipoRelatorio),
@@ -1097,6 +1179,8 @@ class RelatorioCompanion extends UpdateCompanion<RelatorioData> {
     Expression<DateTime>? dataFim,
     Expression<DateTime>? criadoEm,
     Expression<DateTime>? atualizadoEm,
+    Expression<bool>? arquivado,
+    Expression<String>? anotacoes,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1108,6 +1192,8 @@ class RelatorioCompanion extends UpdateCompanion<RelatorioData> {
       if (dataFim != null) 'data_fim': dataFim,
       if (criadoEm != null) 'criado_em': criadoEm,
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (arquivado != null) 'arquivado': arquivado,
+      if (anotacoes != null) 'anotacoes': anotacoes,
     });
   }
 
@@ -1121,6 +1207,8 @@ class RelatorioCompanion extends UpdateCompanion<RelatorioData> {
     Value<DateTime?>? dataFim,
     Value<DateTime>? criadoEm,
     Value<DateTime>? atualizadoEm,
+    Value<bool>? arquivado,
+    Value<String?>? anotacoes,
   }) {
     return RelatorioCompanion(
       id: id ?? this.id,
@@ -1132,6 +1220,8 @@ class RelatorioCompanion extends UpdateCompanion<RelatorioData> {
       dataFim: dataFim ?? this.dataFim,
       criadoEm: criadoEm ?? this.criadoEm,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      arquivado: arquivado ?? this.arquivado,
+      anotacoes: anotacoes ?? this.anotacoes,
     );
   }
 
@@ -1165,6 +1255,12 @@ class RelatorioCompanion extends UpdateCompanion<RelatorioData> {
     if (atualizadoEm.present) {
       map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
     }
+    if (arquivado.present) {
+      map['arquivado'] = Variable<bool>(arquivado.value);
+    }
+    if (anotacoes.present) {
+      map['anotacoes'] = Variable<String>(anotacoes.value);
+    }
     return map;
   }
 
@@ -1179,7 +1275,9 @@ class RelatorioCompanion extends UpdateCompanion<RelatorioData> {
           ..write('dataInicio: $dataInicio, ')
           ..write('dataFim: $dataFim, ')
           ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('arquivado: $arquivado, ')
+          ..write('anotacoes: $anotacoes')
           ..write(')'))
         .toString();
   }
@@ -1282,6 +1380,32 @@ class $SecaoTable extends Secao with TableInfo<$SecaoTable, SecaoData> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _arquivadoMeta = const VerificationMeta(
+    'arquivado',
+  );
+  @override
+  late final GeneratedColumn<bool> arquivado = GeneratedColumn<bool>(
+    'arquivado',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("arquivado" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _anotacoesMeta = const VerificationMeta(
+    'anotacoes',
+  );
+  @override
+  late final GeneratedColumn<String> anotacoes = GeneratedColumn<String>(
+    'anotacoes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1292,6 +1416,8 @@ class $SecaoTable extends Secao with TableInfo<$SecaoTable, SecaoData> {
     ordem,
     criadoEm,
     atualizadoEm,
+    arquivado,
+    anotacoes,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1373,6 +1499,18 @@ class $SecaoTable extends Secao with TableInfo<$SecaoTable, SecaoData> {
     } else if (isInserting) {
       context.missing(_atualizadoEmMeta);
     }
+    if (data.containsKey('arquivado')) {
+      context.handle(
+        _arquivadoMeta,
+        arquivado.isAcceptableOrUnknown(data['arquivado']!, _arquivadoMeta),
+      );
+    }
+    if (data.containsKey('anotacoes')) {
+      context.handle(
+        _anotacoesMeta,
+        anotacoes.isAcceptableOrUnknown(data['anotacoes']!, _anotacoesMeta),
+      );
+    }
     return context;
   }
 
@@ -1414,6 +1552,14 @@ class $SecaoTable extends Secao with TableInfo<$SecaoTable, SecaoData> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}atualizado_em'],
       )!,
+      arquivado: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}arquivado'],
+      )!,
+      anotacoes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}anotacoes'],
+      ),
     );
   }
 
@@ -1432,6 +1578,8 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
   final int ordem;
   final DateTime criadoEm;
   final DateTime atualizadoEm;
+  final bool arquivado;
+  final String? anotacoes;
   const SecaoData({
     required this.id,
     required this.identificador,
@@ -1441,6 +1589,8 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
     required this.ordem,
     required this.criadoEm,
     required this.atualizadoEm,
+    required this.arquivado,
+    this.anotacoes,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1453,6 +1603,10 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
     map['ordem'] = Variable<int>(ordem);
     map['criado_em'] = Variable<DateTime>(criadoEm);
     map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['arquivado'] = Variable<bool>(arquivado);
+    if (!nullToAbsent || anotacoes != null) {
+      map['anotacoes'] = Variable<String>(anotacoes);
+    }
     return map;
   }
 
@@ -1466,6 +1620,10 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
       ordem: Value(ordem),
       criadoEm: Value(criadoEm),
       atualizadoEm: Value(atualizadoEm),
+      arquivado: Value(arquivado),
+      anotacoes: anotacoes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anotacoes),
     );
   }
 
@@ -1483,6 +1641,8 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
       ordem: serializer.fromJson<int>(json['ordem']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      arquivado: serializer.fromJson<bool>(json['arquivado']),
+      anotacoes: serializer.fromJson<String?>(json['anotacoes']),
     );
   }
   @override
@@ -1497,6 +1657,8 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
       'ordem': serializer.toJson<int>(ordem),
       'criadoEm': serializer.toJson<DateTime>(criadoEm),
       'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'arquivado': serializer.toJson<bool>(arquivado),
+      'anotacoes': serializer.toJson<String?>(anotacoes),
     };
   }
 
@@ -1509,6 +1671,8 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
     int? ordem,
     DateTime? criadoEm,
     DateTime? atualizadoEm,
+    bool? arquivado,
+    Value<String?> anotacoes = const Value.absent(),
   }) => SecaoData(
     id: id ?? this.id,
     identificador: identificador ?? this.identificador,
@@ -1518,6 +1682,8 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
     ordem: ordem ?? this.ordem,
     criadoEm: criadoEm ?? this.criadoEm,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    arquivado: arquivado ?? this.arquivado,
+    anotacoes: anotacoes.present ? anotacoes.value : this.anotacoes,
   );
   SecaoData copyWithCompanion(SecaoCompanion data) {
     return SecaoData(
@@ -1535,6 +1701,8 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
       atualizadoEm: data.atualizadoEm.present
           ? data.atualizadoEm.value
           : this.atualizadoEm,
+      arquivado: data.arquivado.present ? data.arquivado.value : this.arquivado,
+      anotacoes: data.anotacoes.present ? data.anotacoes.value : this.anotacoes,
     );
   }
 
@@ -1548,7 +1716,9 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
           ..write('conteudo: $conteudo, ')
           ..write('ordem: $ordem, ')
           ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('arquivado: $arquivado, ')
+          ..write('anotacoes: $anotacoes')
           ..write(')'))
         .toString();
   }
@@ -1563,6 +1733,8 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
     ordem,
     criadoEm,
     atualizadoEm,
+    arquivado,
+    anotacoes,
   );
   @override
   bool operator ==(Object other) =>
@@ -1575,7 +1747,9 @@ class SecaoData extends DataClass implements Insertable<SecaoData> {
           other.conteudo == this.conteudo &&
           other.ordem == this.ordem &&
           other.criadoEm == this.criadoEm &&
-          other.atualizadoEm == this.atualizadoEm);
+          other.atualizadoEm == this.atualizadoEm &&
+          other.arquivado == this.arquivado &&
+          other.anotacoes == this.anotacoes);
 }
 
 class SecaoCompanion extends UpdateCompanion<SecaoData> {
@@ -1587,6 +1761,8 @@ class SecaoCompanion extends UpdateCompanion<SecaoData> {
   final Value<int> ordem;
   final Value<DateTime> criadoEm;
   final Value<DateTime> atualizadoEm;
+  final Value<bool> arquivado;
+  final Value<String?> anotacoes;
   const SecaoCompanion({
     this.id = const Value.absent(),
     this.identificador = const Value.absent(),
@@ -1596,6 +1772,8 @@ class SecaoCompanion extends UpdateCompanion<SecaoData> {
     this.ordem = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
+    this.arquivado = const Value.absent(),
+    this.anotacoes = const Value.absent(),
   });
   SecaoCompanion.insert({
     this.id = const Value.absent(),
@@ -1606,6 +1784,8 @@ class SecaoCompanion extends UpdateCompanion<SecaoData> {
     required int ordem,
     required DateTime criadoEm,
     required DateTime atualizadoEm,
+    this.arquivado = const Value.absent(),
+    this.anotacoes = const Value.absent(),
   }) : identificador = Value(identificador),
        relatorioId = Value(relatorioId),
        tipoSecao = Value(tipoSecao),
@@ -1622,6 +1802,8 @@ class SecaoCompanion extends UpdateCompanion<SecaoData> {
     Expression<int>? ordem,
     Expression<DateTime>? criadoEm,
     Expression<DateTime>? atualizadoEm,
+    Expression<bool>? arquivado,
+    Expression<String>? anotacoes,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1632,6 +1814,8 @@ class SecaoCompanion extends UpdateCompanion<SecaoData> {
       if (ordem != null) 'ordem': ordem,
       if (criadoEm != null) 'criado_em': criadoEm,
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (arquivado != null) 'arquivado': arquivado,
+      if (anotacoes != null) 'anotacoes': anotacoes,
     });
   }
 
@@ -1644,6 +1828,8 @@ class SecaoCompanion extends UpdateCompanion<SecaoData> {
     Value<int>? ordem,
     Value<DateTime>? criadoEm,
     Value<DateTime>? atualizadoEm,
+    Value<bool>? arquivado,
+    Value<String?>? anotacoes,
   }) {
     return SecaoCompanion(
       id: id ?? this.id,
@@ -1654,6 +1840,8 @@ class SecaoCompanion extends UpdateCompanion<SecaoData> {
       ordem: ordem ?? this.ordem,
       criadoEm: criadoEm ?? this.criadoEm,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      arquivado: arquivado ?? this.arquivado,
+      anotacoes: anotacoes ?? this.anotacoes,
     );
   }
 
@@ -1684,6 +1872,12 @@ class SecaoCompanion extends UpdateCompanion<SecaoData> {
     if (atualizadoEm.present) {
       map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
     }
+    if (arquivado.present) {
+      map['arquivado'] = Variable<bool>(arquivado.value);
+    }
+    if (anotacoes.present) {
+      map['anotacoes'] = Variable<String>(anotacoes.value);
+    }
     return map;
   }
 
@@ -1697,7 +1891,9 @@ class SecaoCompanion extends UpdateCompanion<SecaoData> {
           ..write('conteudo: $conteudo, ')
           ..write('ordem: $ordem, ')
           ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('arquivado: $arquivado, ')
+          ..write('anotacoes: $anotacoes')
           ..write(')'))
         .toString();
   }
@@ -1854,6 +2050,32 @@ class $VulnerabilidadeTable extends Vulnerabilidade
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _arquivadoMeta = const VerificationMeta(
+    'arquivado',
+  );
+  @override
+  late final GeneratedColumn<bool> arquivado = GeneratedColumn<bool>(
+    'arquivado',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("arquivado" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _anotacoesMeta = const VerificationMeta(
+    'anotacoes',
+  );
+  @override
+  late final GeneratedColumn<String> anotacoes = GeneratedColumn<String>(
+    'anotacoes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1869,12 +2091,14 @@ class $VulnerabilidadeTable extends Vulnerabilidade
     status,
     criadoEm,
     atualizadoEm,
+    arquivado,
+    anotacoes,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'vulnerabilidade';
+  static const String $name = 'vulnerabilidades';
   @override
   VerificationContext validateIntegrity(
     Insertable<VulnerabilidadeData> instance, {
@@ -1994,6 +2218,18 @@ class $VulnerabilidadeTable extends Vulnerabilidade
     } else if (isInserting) {
       context.missing(_atualizadoEmMeta);
     }
+    if (data.containsKey('arquivado')) {
+      context.handle(
+        _arquivadoMeta,
+        arquivado.isAcceptableOrUnknown(data['arquivado']!, _arquivadoMeta),
+      );
+    }
+    if (data.containsKey('anotacoes')) {
+      context.handle(
+        _anotacoesMeta,
+        anotacoes.isAcceptableOrUnknown(data['anotacoes']!, _anotacoesMeta),
+      );
+    }
     return context;
   }
 
@@ -2055,6 +2291,14 @@ class $VulnerabilidadeTable extends Vulnerabilidade
         DriftSqlType.dateTime,
         data['${effectivePrefix}atualizado_em'],
       )!,
+      arquivado: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}arquivado'],
+      )!,
+      anotacoes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}anotacoes'],
+      ),
     );
   }
 
@@ -2079,6 +2323,8 @@ class VulnerabilidadeData extends DataClass
   final int status;
   final DateTime criadoEm;
   final DateTime atualizadoEm;
+  final bool arquivado;
+  final String? anotacoes;
   const VulnerabilidadeData({
     required this.id,
     required this.identificador,
@@ -2093,6 +2339,8 @@ class VulnerabilidadeData extends DataClass
     required this.status,
     required this.criadoEm,
     required this.atualizadoEm,
+    required this.arquivado,
+    this.anotacoes,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2112,6 +2360,10 @@ class VulnerabilidadeData extends DataClass
     map['status'] = Variable<int>(status);
     map['criado_em'] = Variable<DateTime>(criadoEm);
     map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['arquivado'] = Variable<bool>(arquivado);
+    if (!nullToAbsent || anotacoes != null) {
+      map['anotacoes'] = Variable<String>(anotacoes);
+    }
     return map;
   }
 
@@ -2132,6 +2384,10 @@ class VulnerabilidadeData extends DataClass
       status: Value(status),
       criadoEm: Value(criadoEm),
       atualizadoEm: Value(atualizadoEm),
+      arquivado: Value(arquivado),
+      anotacoes: anotacoes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anotacoes),
     );
   }
 
@@ -2154,6 +2410,8 @@ class VulnerabilidadeData extends DataClass
       status: serializer.fromJson<int>(json['status']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      arquivado: serializer.fromJson<bool>(json['arquivado']),
+      anotacoes: serializer.fromJson<String?>(json['anotacoes']),
     );
   }
   @override
@@ -2173,6 +2431,8 @@ class VulnerabilidadeData extends DataClass
       'status': serializer.toJson<int>(status),
       'criadoEm': serializer.toJson<DateTime>(criadoEm),
       'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'arquivado': serializer.toJson<bool>(arquivado),
+      'anotacoes': serializer.toJson<String?>(anotacoes),
     };
   }
 
@@ -2190,6 +2450,8 @@ class VulnerabilidadeData extends DataClass
     int? status,
     DateTime? criadoEm,
     DateTime? atualizadoEm,
+    bool? arquivado,
+    Value<String?> anotacoes = const Value.absent(),
   }) => VulnerabilidadeData(
     id: id ?? this.id,
     identificador: identificador ?? this.identificador,
@@ -2204,6 +2466,8 @@ class VulnerabilidadeData extends DataClass
     status: status ?? this.status,
     criadoEm: criadoEm ?? this.criadoEm,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    arquivado: arquivado ?? this.arquivado,
+    anotacoes: anotacoes.present ? anotacoes.value : this.anotacoes,
   );
   VulnerabilidadeData copyWithCompanion(VulnerabilidadeCompanion data) {
     return VulnerabilidadeData(
@@ -2232,6 +2496,8 @@ class VulnerabilidadeData extends DataClass
       atualizadoEm: data.atualizadoEm.present
           ? data.atualizadoEm.value
           : this.atualizadoEm,
+      arquivado: data.arquivado.present ? data.arquivado.value : this.arquivado,
+      anotacoes: data.anotacoes.present ? data.anotacoes.value : this.anotacoes,
     );
   }
 
@@ -2250,7 +2516,9 @@ class VulnerabilidadeData extends DataClass
           ..write('referencias: $referencias, ')
           ..write('status: $status, ')
           ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('arquivado: $arquivado, ')
+          ..write('anotacoes: $anotacoes')
           ..write(')'))
         .toString();
   }
@@ -2270,6 +2538,8 @@ class VulnerabilidadeData extends DataClass
     status,
     criadoEm,
     atualizadoEm,
+    arquivado,
+    anotacoes,
   );
   @override
   bool operator ==(Object other) =>
@@ -2287,7 +2557,9 @@ class VulnerabilidadeData extends DataClass
           other.referencias == this.referencias &&
           other.status == this.status &&
           other.criadoEm == this.criadoEm &&
-          other.atualizadoEm == this.atualizadoEm);
+          other.atualizadoEm == this.atualizadoEm &&
+          other.arquivado == this.arquivado &&
+          other.anotacoes == this.anotacoes);
 }
 
 class VulnerabilidadeCompanion extends UpdateCompanion<VulnerabilidadeData> {
@@ -2304,6 +2576,8 @@ class VulnerabilidadeCompanion extends UpdateCompanion<VulnerabilidadeData> {
   final Value<int> status;
   final Value<DateTime> criadoEm;
   final Value<DateTime> atualizadoEm;
+  final Value<bool> arquivado;
+  final Value<String?> anotacoes;
   const VulnerabilidadeCompanion({
     this.id = const Value.absent(),
     this.identificador = const Value.absent(),
@@ -2318,6 +2592,8 @@ class VulnerabilidadeCompanion extends UpdateCompanion<VulnerabilidadeData> {
     this.status = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
+    this.arquivado = const Value.absent(),
+    this.anotacoes = const Value.absent(),
   });
   VulnerabilidadeCompanion.insert({
     this.id = const Value.absent(),
@@ -2333,6 +2609,8 @@ class VulnerabilidadeCompanion extends UpdateCompanion<VulnerabilidadeData> {
     required int status,
     required DateTime criadoEm,
     required DateTime atualizadoEm,
+    this.arquivado = const Value.absent(),
+    this.anotacoes = const Value.absent(),
   }) : identificador = Value(identificador),
        secaoId = Value(secaoId),
        titulo = Value(titulo),
@@ -2358,6 +2636,8 @@ class VulnerabilidadeCompanion extends UpdateCompanion<VulnerabilidadeData> {
     Expression<int>? status,
     Expression<DateTime>? criadoEm,
     Expression<DateTime>? atualizadoEm,
+    Expression<bool>? arquivado,
+    Expression<String>? anotacoes,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2373,6 +2653,8 @@ class VulnerabilidadeCompanion extends UpdateCompanion<VulnerabilidadeData> {
       if (status != null) 'status': status,
       if (criadoEm != null) 'criado_em': criadoEm,
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (arquivado != null) 'arquivado': arquivado,
+      if (anotacoes != null) 'anotacoes': anotacoes,
     });
   }
 
@@ -2390,6 +2672,8 @@ class VulnerabilidadeCompanion extends UpdateCompanion<VulnerabilidadeData> {
     Value<int>? status,
     Value<DateTime>? criadoEm,
     Value<DateTime>? atualizadoEm,
+    Value<bool>? arquivado,
+    Value<String?>? anotacoes,
   }) {
     return VulnerabilidadeCompanion(
       id: id ?? this.id,
@@ -2405,6 +2689,8 @@ class VulnerabilidadeCompanion extends UpdateCompanion<VulnerabilidadeData> {
       status: status ?? this.status,
       criadoEm: criadoEm ?? this.criadoEm,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      arquivado: arquivado ?? this.arquivado,
+      anotacoes: anotacoes ?? this.anotacoes,
     );
   }
 
@@ -2450,6 +2736,12 @@ class VulnerabilidadeCompanion extends UpdateCompanion<VulnerabilidadeData> {
     if (atualizadoEm.present) {
       map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
     }
+    if (arquivado.present) {
+      map['arquivado'] = Variable<bool>(arquivado.value);
+    }
+    if (anotacoes.present) {
+      map['anotacoes'] = Variable<String>(anotacoes.value);
+    }
     return map;
   }
 
@@ -2468,7 +2760,9 @@ class VulnerabilidadeCompanion extends UpdateCompanion<VulnerabilidadeData> {
           ..write('referencias: $referencias, ')
           ..write('status: $status, ')
           ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('arquivado: $arquivado, ')
+          ..write('anotacoes: $anotacoes')
           ..write(')'))
         .toString();
   }
@@ -2516,7 +2810,7 @@ class $EvidenciaTable extends Evidencia
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES vulnerabilidade (id)',
+      'REFERENCES vulnerabilidades (id)',
     ),
   );
   static const VerificationMeta _caminhoMeta = const VerificationMeta(
@@ -2592,6 +2886,32 @@ class $EvidenciaTable extends Evidencia
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _arquivadoMeta = const VerificationMeta(
+    'arquivado',
+  );
+  @override
+  late final GeneratedColumn<bool> arquivado = GeneratedColumn<bool>(
+    'arquivado',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("arquivado" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _anotacoesMeta = const VerificationMeta(
+    'anotacoes',
+  );
+  @override
+  late final GeneratedColumn<String> anotacoes = GeneratedColumn<String>(
+    'anotacoes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2604,12 +2924,14 @@ class $EvidenciaTable extends Evidencia
     ordem,
     criadoEm,
     atualizadoEm,
+    arquivado,
+    anotacoes,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'evidencia';
+  static const String $name = 'evidencias';
   @override
   VerificationContext validateIntegrity(
     Insertable<EvidenciaData> instance, {
@@ -2699,6 +3021,18 @@ class $EvidenciaTable extends Evidencia
     } else if (isInserting) {
       context.missing(_atualizadoEmMeta);
     }
+    if (data.containsKey('arquivado')) {
+      context.handle(
+        _arquivadoMeta,
+        arquivado.isAcceptableOrUnknown(data['arquivado']!, _arquivadoMeta),
+      );
+    }
+    if (data.containsKey('anotacoes')) {
+      context.handle(
+        _anotacoesMeta,
+        anotacoes.isAcceptableOrUnknown(data['anotacoes']!, _anotacoesMeta),
+      );
+    }
     return context;
   }
 
@@ -2748,6 +3082,14 @@ class $EvidenciaTable extends Evidencia
         DriftSqlType.dateTime,
         data['${effectivePrefix}atualizado_em'],
       )!,
+      arquivado: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}arquivado'],
+      )!,
+      anotacoes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}anotacoes'],
+      ),
     );
   }
 
@@ -2768,6 +3110,8 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
   final int ordem;
   final DateTime criadoEm;
   final DateTime atualizadoEm;
+  final bool arquivado;
+  final String? anotacoes;
   const EvidenciaData({
     required this.id,
     required this.identificador,
@@ -2779,6 +3123,8 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
     required this.ordem,
     required this.criadoEm,
     required this.atualizadoEm,
+    required this.arquivado,
+    this.anotacoes,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2795,6 +3141,10 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
     map['ordem'] = Variable<int>(ordem);
     map['criado_em'] = Variable<DateTime>(criadoEm);
     map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['arquivado'] = Variable<bool>(arquivado);
+    if (!nullToAbsent || anotacoes != null) {
+      map['anotacoes'] = Variable<String>(anotacoes);
+    }
     return map;
   }
 
@@ -2812,6 +3162,10 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
       ordem: Value(ordem),
       criadoEm: Value(criadoEm),
       atualizadoEm: Value(atualizadoEm),
+      arquivado: Value(arquivado),
+      anotacoes: anotacoes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anotacoes),
     );
   }
 
@@ -2831,6 +3185,8 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
       ordem: serializer.fromJson<int>(json['ordem']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      arquivado: serializer.fromJson<bool>(json['arquivado']),
+      anotacoes: serializer.fromJson<String?>(json['anotacoes']),
     );
   }
   @override
@@ -2847,6 +3203,8 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
       'ordem': serializer.toJson<int>(ordem),
       'criadoEm': serializer.toJson<DateTime>(criadoEm),
       'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'arquivado': serializer.toJson<bool>(arquivado),
+      'anotacoes': serializer.toJson<String?>(anotacoes),
     };
   }
 
@@ -2861,6 +3219,8 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
     int? ordem,
     DateTime? criadoEm,
     DateTime? atualizadoEm,
+    bool? arquivado,
+    Value<String?> anotacoes = const Value.absent(),
   }) => EvidenciaData(
     id: id ?? this.id,
     identificador: identificador ?? this.identificador,
@@ -2872,6 +3232,8 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
     ordem: ordem ?? this.ordem,
     criadoEm: criadoEm ?? this.criadoEm,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    arquivado: arquivado ?? this.arquivado,
+    anotacoes: anotacoes.present ? anotacoes.value : this.anotacoes,
   );
   EvidenciaData copyWithCompanion(EvidenciaCompanion data) {
     return EvidenciaData(
@@ -2891,6 +3253,8 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
       atualizadoEm: data.atualizadoEm.present
           ? data.atualizadoEm.value
           : this.atualizadoEm,
+      arquivado: data.arquivado.present ? data.arquivado.value : this.arquivado,
+      anotacoes: data.anotacoes.present ? data.anotacoes.value : this.anotacoes,
     );
   }
 
@@ -2906,7 +3270,9 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
           ..write('descricao: $descricao, ')
           ..write('ordem: $ordem, ')
           ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('arquivado: $arquivado, ')
+          ..write('anotacoes: $anotacoes')
           ..write(')'))
         .toString();
   }
@@ -2923,6 +3289,8 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
     ordem,
     criadoEm,
     atualizadoEm,
+    arquivado,
+    anotacoes,
   );
   @override
   bool operator ==(Object other) =>
@@ -2937,7 +3305,9 @@ class EvidenciaData extends DataClass implements Insertable<EvidenciaData> {
           other.descricao == this.descricao &&
           other.ordem == this.ordem &&
           other.criadoEm == this.criadoEm &&
-          other.atualizadoEm == this.atualizadoEm);
+          other.atualizadoEm == this.atualizadoEm &&
+          other.arquivado == this.arquivado &&
+          other.anotacoes == this.anotacoes);
 }
 
 class EvidenciaCompanion extends UpdateCompanion<EvidenciaData> {
@@ -2951,6 +3321,8 @@ class EvidenciaCompanion extends UpdateCompanion<EvidenciaData> {
   final Value<int> ordem;
   final Value<DateTime> criadoEm;
   final Value<DateTime> atualizadoEm;
+  final Value<bool> arquivado;
+  final Value<String?> anotacoes;
   const EvidenciaCompanion({
     this.id = const Value.absent(),
     this.identificador = const Value.absent(),
@@ -2962,6 +3334,8 @@ class EvidenciaCompanion extends UpdateCompanion<EvidenciaData> {
     this.ordem = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
+    this.arquivado = const Value.absent(),
+    this.anotacoes = const Value.absent(),
   });
   EvidenciaCompanion.insert({
     this.id = const Value.absent(),
@@ -2974,6 +3348,8 @@ class EvidenciaCompanion extends UpdateCompanion<EvidenciaData> {
     required int ordem,
     required DateTime criadoEm,
     required DateTime atualizadoEm,
+    this.arquivado = const Value.absent(),
+    this.anotacoes = const Value.absent(),
   }) : identificador = Value(identificador),
        vulnerabilidadeId = Value(vulnerabilidadeId),
        caminho = Value(caminho),
@@ -2993,6 +3369,8 @@ class EvidenciaCompanion extends UpdateCompanion<EvidenciaData> {
     Expression<int>? ordem,
     Expression<DateTime>? criadoEm,
     Expression<DateTime>? atualizadoEm,
+    Expression<bool>? arquivado,
+    Expression<String>? anotacoes,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3005,6 +3383,8 @@ class EvidenciaCompanion extends UpdateCompanion<EvidenciaData> {
       if (ordem != null) 'ordem': ordem,
       if (criadoEm != null) 'criado_em': criadoEm,
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (arquivado != null) 'arquivado': arquivado,
+      if (anotacoes != null) 'anotacoes': anotacoes,
     });
   }
 
@@ -3019,6 +3399,8 @@ class EvidenciaCompanion extends UpdateCompanion<EvidenciaData> {
     Value<int>? ordem,
     Value<DateTime>? criadoEm,
     Value<DateTime>? atualizadoEm,
+    Value<bool>? arquivado,
+    Value<String?>? anotacoes,
   }) {
     return EvidenciaCompanion(
       id: id ?? this.id,
@@ -3031,6 +3413,8 @@ class EvidenciaCompanion extends UpdateCompanion<EvidenciaData> {
       ordem: ordem ?? this.ordem,
       criadoEm: criadoEm ?? this.criadoEm,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      arquivado: arquivado ?? this.arquivado,
+      anotacoes: anotacoes ?? this.anotacoes,
     );
   }
 
@@ -3067,6 +3451,12 @@ class EvidenciaCompanion extends UpdateCompanion<EvidenciaData> {
     if (atualizadoEm.present) {
       map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
     }
+    if (arquivado.present) {
+      map['arquivado'] = Variable<bool>(arquivado.value);
+    }
+    if (anotacoes.present) {
+      map['anotacoes'] = Variable<String>(anotacoes.value);
+    }
     return map;
   }
 
@@ -3082,7 +3472,9 @@ class EvidenciaCompanion extends UpdateCompanion<EvidenciaData> {
           ..write('descricao: $descricao, ')
           ..write('ordem: $ordem, ')
           ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('arquivado: $arquivado, ')
+          ..write('anotacoes: $anotacoes')
           ..write(')'))
         .toString();
   }
@@ -3174,6 +3566,32 @@ class $EscopoTable extends Escopo with TableInfo<$EscopoTable, EscopoData> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _arquivadoMeta = const VerificationMeta(
+    'arquivado',
+  );
+  @override
+  late final GeneratedColumn<bool> arquivado = GeneratedColumn<bool>(
+    'arquivado',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("arquivado" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _anotacoesMeta = const VerificationMeta(
+    'anotacoes',
+  );
+  @override
+  late final GeneratedColumn<String> anotacoes = GeneratedColumn<String>(
+    'anotacoes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3183,12 +3601,14 @@ class $EscopoTable extends Escopo with TableInfo<$EscopoTable, EscopoData> {
     valor,
     criadoEm,
     atualizadoEm,
+    arquivado,
+    anotacoes,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'escopo';
+  static const String $name = 'escopos';
   @override
   VerificationContext validateIntegrity(
     Insertable<EscopoData> instance, {
@@ -3256,6 +3676,18 @@ class $EscopoTable extends Escopo with TableInfo<$EscopoTable, EscopoData> {
     } else if (isInserting) {
       context.missing(_atualizadoEmMeta);
     }
+    if (data.containsKey('arquivado')) {
+      context.handle(
+        _arquivadoMeta,
+        arquivado.isAcceptableOrUnknown(data['arquivado']!, _arquivadoMeta),
+      );
+    }
+    if (data.containsKey('anotacoes')) {
+      context.handle(
+        _anotacoesMeta,
+        anotacoes.isAcceptableOrUnknown(data['anotacoes']!, _anotacoesMeta),
+      );
+    }
     return context;
   }
 
@@ -3293,6 +3725,14 @@ class $EscopoTable extends Escopo with TableInfo<$EscopoTable, EscopoData> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}atualizado_em'],
       )!,
+      arquivado: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}arquivado'],
+      )!,
+      anotacoes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}anotacoes'],
+      ),
     );
   }
 
@@ -3310,6 +3750,8 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
   final String valor;
   final DateTime criadoEm;
   final DateTime atualizadoEm;
+  final bool arquivado;
+  final String? anotacoes;
   const EscopoData({
     required this.id,
     required this.identificador,
@@ -3318,6 +3760,8 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
     required this.valor,
     required this.criadoEm,
     required this.atualizadoEm,
+    required this.arquivado,
+    this.anotacoes,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3329,6 +3773,10 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
     map['valor'] = Variable<String>(valor);
     map['criado_em'] = Variable<DateTime>(criadoEm);
     map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['arquivado'] = Variable<bool>(arquivado);
+    if (!nullToAbsent || anotacoes != null) {
+      map['anotacoes'] = Variable<String>(anotacoes);
+    }
     return map;
   }
 
@@ -3341,6 +3789,10 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
       valor: Value(valor),
       criadoEm: Value(criadoEm),
       atualizadoEm: Value(atualizadoEm),
+      arquivado: Value(arquivado),
+      anotacoes: anotacoes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(anotacoes),
     );
   }
 
@@ -3357,6 +3809,8 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
       valor: serializer.fromJson<String>(json['valor']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      arquivado: serializer.fromJson<bool>(json['arquivado']),
+      anotacoes: serializer.fromJson<String?>(json['anotacoes']),
     );
   }
   @override
@@ -3370,6 +3824,8 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
       'valor': serializer.toJson<String>(valor),
       'criadoEm': serializer.toJson<DateTime>(criadoEm),
       'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'arquivado': serializer.toJson<bool>(arquivado),
+      'anotacoes': serializer.toJson<String?>(anotacoes),
     };
   }
 
@@ -3381,6 +3837,8 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
     String? valor,
     DateTime? criadoEm,
     DateTime? atualizadoEm,
+    bool? arquivado,
+    Value<String?> anotacoes = const Value.absent(),
   }) => EscopoData(
     id: id ?? this.id,
     identificador: identificador ?? this.identificador,
@@ -3389,6 +3847,8 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
     valor: valor ?? this.valor,
     criadoEm: criadoEm ?? this.criadoEm,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    arquivado: arquivado ?? this.arquivado,
+    anotacoes: anotacoes.present ? anotacoes.value : this.anotacoes,
   );
   EscopoData copyWithCompanion(EscopoCompanion data) {
     return EscopoData(
@@ -3407,6 +3867,8 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
       atualizadoEm: data.atualizadoEm.present
           ? data.atualizadoEm.value
           : this.atualizadoEm,
+      arquivado: data.arquivado.present ? data.arquivado.value : this.arquivado,
+      anotacoes: data.anotacoes.present ? data.anotacoes.value : this.anotacoes,
     );
   }
 
@@ -3419,7 +3881,9 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
           ..write('tipoEscopo: $tipoEscopo, ')
           ..write('valor: $valor, ')
           ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('arquivado: $arquivado, ')
+          ..write('anotacoes: $anotacoes')
           ..write(')'))
         .toString();
   }
@@ -3433,6 +3897,8 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
     valor,
     criadoEm,
     atualizadoEm,
+    arquivado,
+    anotacoes,
   );
   @override
   bool operator ==(Object other) =>
@@ -3444,7 +3910,9 @@ class EscopoData extends DataClass implements Insertable<EscopoData> {
           other.tipoEscopo == this.tipoEscopo &&
           other.valor == this.valor &&
           other.criadoEm == this.criadoEm &&
-          other.atualizadoEm == this.atualizadoEm);
+          other.atualizadoEm == this.atualizadoEm &&
+          other.arquivado == this.arquivado &&
+          other.anotacoes == this.anotacoes);
 }
 
 class EscopoCompanion extends UpdateCompanion<EscopoData> {
@@ -3455,6 +3923,8 @@ class EscopoCompanion extends UpdateCompanion<EscopoData> {
   final Value<String> valor;
   final Value<DateTime> criadoEm;
   final Value<DateTime> atualizadoEm;
+  final Value<bool> arquivado;
+  final Value<String?> anotacoes;
   const EscopoCompanion({
     this.id = const Value.absent(),
     this.identificador = const Value.absent(),
@@ -3463,6 +3933,8 @@ class EscopoCompanion extends UpdateCompanion<EscopoData> {
     this.valor = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
+    this.arquivado = const Value.absent(),
+    this.anotacoes = const Value.absent(),
   });
   EscopoCompanion.insert({
     this.id = const Value.absent(),
@@ -3472,6 +3944,8 @@ class EscopoCompanion extends UpdateCompanion<EscopoData> {
     required String valor,
     required DateTime criadoEm,
     required DateTime atualizadoEm,
+    this.arquivado = const Value.absent(),
+    this.anotacoes = const Value.absent(),
   }) : identificador = Value(identificador),
        relatorioId = Value(relatorioId),
        tipoEscopo = Value(tipoEscopo),
@@ -3486,6 +3960,8 @@ class EscopoCompanion extends UpdateCompanion<EscopoData> {
     Expression<String>? valor,
     Expression<DateTime>? criadoEm,
     Expression<DateTime>? atualizadoEm,
+    Expression<bool>? arquivado,
+    Expression<String>? anotacoes,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3495,6 +3971,8 @@ class EscopoCompanion extends UpdateCompanion<EscopoData> {
       if (valor != null) 'valor': valor,
       if (criadoEm != null) 'criado_em': criadoEm,
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (arquivado != null) 'arquivado': arquivado,
+      if (anotacoes != null) 'anotacoes': anotacoes,
     });
   }
 
@@ -3506,6 +3984,8 @@ class EscopoCompanion extends UpdateCompanion<EscopoData> {
     Value<String>? valor,
     Value<DateTime>? criadoEm,
     Value<DateTime>? atualizadoEm,
+    Value<bool>? arquivado,
+    Value<String?>? anotacoes,
   }) {
     return EscopoCompanion(
       id: id ?? this.id,
@@ -3515,6 +3995,8 @@ class EscopoCompanion extends UpdateCompanion<EscopoData> {
       valor: valor ?? this.valor,
       criadoEm: criadoEm ?? this.criadoEm,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      arquivado: arquivado ?? this.arquivado,
+      anotacoes: anotacoes ?? this.anotacoes,
     );
   }
 
@@ -3542,6 +4024,12 @@ class EscopoCompanion extends UpdateCompanion<EscopoData> {
     if (atualizadoEm.present) {
       map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
     }
+    if (arquivado.present) {
+      map['arquivado'] = Variable<bool>(arquivado.value);
+    }
+    if (anotacoes.present) {
+      map['anotacoes'] = Variable<String>(anotacoes.value);
+    }
     return map;
   }
 
@@ -3554,7 +4042,9 @@ class EscopoCompanion extends UpdateCompanion<EscopoData> {
           ..write('tipoEscopo: $tipoEscopo, ')
           ..write('valor: $valor, ')
           ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('arquivado: $arquivado, ')
+          ..write('anotacoes: $anotacoes')
           ..write(')'))
         .toString();
   }
@@ -3986,6 +4476,8 @@ typedef $$RelatorioTableCreateCompanionBuilder =
       Value<DateTime?> dataFim,
       required DateTime criadoEm,
       required DateTime atualizadoEm,
+      Value<bool> arquivado,
+      Value<String?> anotacoes,
     });
 typedef $$RelatorioTableUpdateCompanionBuilder =
     RelatorioCompanion Function({
@@ -3998,6 +4490,8 @@ typedef $$RelatorioTableUpdateCompanionBuilder =
       Value<DateTime?> dataFim,
       Value<DateTime> criadoEm,
       Value<DateTime> atualizadoEm,
+      Value<bool> arquivado,
+      Value<String?> anotacoes,
     });
 
 final class $$RelatorioTableReferences
@@ -4043,7 +4537,7 @@ final class $$RelatorioTableReferences
   static MultiTypedResultKey<$VulnerabilidadeTable, List<VulnerabilidadeData>>
   _vulnerabilidadeRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.vulnerabilidade,
-    aliasName: 'relatorios__id__vulnerabilidade__secao_id',
+    aliasName: 'relatorios__id__vulnerabilidades__secao_id',
   );
 
   $$VulnerabilidadeTableProcessedTableManager get vulnerabilidadeRefs {
@@ -4064,7 +4558,7 @@ final class $$RelatorioTableReferences
     _$AppDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.escopo,
-    aliasName: 'relatorios__id__escopo__relatorio_id',
+    aliasName: 'relatorios__id__escopos__relatorio_id',
   );
 
   $$EscopoTableProcessedTableManager get escopoRefs {
@@ -4126,6 +4620,16 @@ class $$RelatorioTableFilterComposer
 
   ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
     column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get anotacoes => $composableBuilder(
+    column: $table.anotacoes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4277,6 +4781,16 @@ class $$RelatorioTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get anotacoes => $composableBuilder(
+    column: $table.anotacoes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ClienteTableOrderingComposer get clienteId {
     final $$ClienteTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4341,6 +4855,12 @@ class $$RelatorioTableAnnotationComposer
     column: $table.atualizadoEm,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get arquivado =>
+      $composableBuilder(column: $table.arquivado, builder: (column) => column);
+
+  GeneratedColumn<String> get anotacoes =>
+      $composableBuilder(column: $table.anotacoes, builder: (column) => column);
 
   $$ClienteTableAnnotationComposer get clienteId {
     final $$ClienteTableAnnotationComposer composer = $composerBuilder(
@@ -4483,6 +5003,8 @@ class $$RelatorioTableTableManager
                 Value<DateTime?> dataFim = const Value.absent(),
                 Value<DateTime> criadoEm = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<bool> arquivado = const Value.absent(),
+                Value<String?> anotacoes = const Value.absent(),
               }) => RelatorioCompanion(
                 id: id,
                 identificador: identificador,
@@ -4493,6 +5015,8 @@ class $$RelatorioTableTableManager
                 dataFim: dataFim,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
+                arquivado: arquivado,
+                anotacoes: anotacoes,
               ),
           createCompanionCallback:
               ({
@@ -4505,6 +5029,8 @@ class $$RelatorioTableTableManager
                 Value<DateTime?> dataFim = const Value.absent(),
                 required DateTime criadoEm,
                 required DateTime atualizadoEm,
+                Value<bool> arquivado = const Value.absent(),
+                Value<String?> anotacoes = const Value.absent(),
               }) => RelatorioCompanion.insert(
                 id: id,
                 identificador: identificador,
@@ -4515,6 +5041,8 @@ class $$RelatorioTableTableManager
                 dataFim: dataFim,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
+                arquivado: arquivado,
+                anotacoes: anotacoes,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -4672,6 +5200,8 @@ typedef $$SecaoTableCreateCompanionBuilder =
       required int ordem,
       required DateTime criadoEm,
       required DateTime atualizadoEm,
+      Value<bool> arquivado,
+      Value<String?> anotacoes,
     });
 typedef $$SecaoTableUpdateCompanionBuilder =
     SecaoCompanion Function({
@@ -4683,6 +5213,8 @@ typedef $$SecaoTableUpdateCompanionBuilder =
       Value<int> ordem,
       Value<DateTime> criadoEm,
       Value<DateTime> atualizadoEm,
+      Value<bool> arquivado,
+      Value<String?> anotacoes,
     });
 
 final class $$SecaoTableReferences
@@ -4747,6 +5279,16 @@ class $$SecaoTableFilterComposer extends Composer<_$AppDatabase, $SecaoTable> {
 
   ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
     column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get anotacoes => $composableBuilder(
+    column: $table.anotacoes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4818,6 +5360,16 @@ class $$SecaoTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get anotacoes => $composableBuilder(
+    column: $table.anotacoes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$RelatorioTableOrderingComposer get relatorioId {
     final $$RelatorioTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4875,6 +5427,12 @@ class $$SecaoTableAnnotationComposer
     column: $table.atualizadoEm,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get arquivado =>
+      $composableBuilder(column: $table.arquivado, builder: (column) => column);
+
+  GeneratedColumn<String> get anotacoes =>
+      $composableBuilder(column: $table.anotacoes, builder: (column) => column);
 
   $$RelatorioTableAnnotationComposer get relatorioId {
     final $$RelatorioTableAnnotationComposer composer = $composerBuilder(
@@ -4936,6 +5494,8 @@ class $$SecaoTableTableManager
                 Value<int> ordem = const Value.absent(),
                 Value<DateTime> criadoEm = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<bool> arquivado = const Value.absent(),
+                Value<String?> anotacoes = const Value.absent(),
               }) => SecaoCompanion(
                 id: id,
                 identificador: identificador,
@@ -4945,6 +5505,8 @@ class $$SecaoTableTableManager
                 ordem: ordem,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
+                arquivado: arquivado,
+                anotacoes: anotacoes,
               ),
           createCompanionCallback:
               ({
@@ -4956,6 +5518,8 @@ class $$SecaoTableTableManager
                 required int ordem,
                 required DateTime criadoEm,
                 required DateTime atualizadoEm,
+                Value<bool> arquivado = const Value.absent(),
+                Value<String?> anotacoes = const Value.absent(),
               }) => SecaoCompanion.insert(
                 id: id,
                 identificador: identificador,
@@ -4965,6 +5529,8 @@ class $$SecaoTableTableManager
                 ordem: ordem,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
+                arquivado: arquivado,
+                anotacoes: anotacoes,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -5046,6 +5612,8 @@ typedef $$VulnerabilidadeTableCreateCompanionBuilder =
       required int status,
       required DateTime criadoEm,
       required DateTime atualizadoEm,
+      Value<bool> arquivado,
+      Value<String?> anotacoes,
     });
 typedef $$VulnerabilidadeTableUpdateCompanionBuilder =
     VulnerabilidadeCompanion Function({
@@ -5062,6 +5630,8 @@ typedef $$VulnerabilidadeTableUpdateCompanionBuilder =
       Value<int> status,
       Value<DateTime> criadoEm,
       Value<DateTime> atualizadoEm,
+      Value<bool> arquivado,
+      Value<String?> anotacoes,
     });
 
 final class $$VulnerabilidadeTableReferences
@@ -5078,7 +5648,7 @@ final class $$VulnerabilidadeTableReferences
   );
 
   static $RelatorioTable _secaoIdTable(_$AppDatabase db) =>
-      db.relatorio.createAlias('vulnerabilidade__secao_id__relatorios__id');
+      db.relatorio.createAlias('vulnerabilidades__secao_id__relatorios__id');
 
   $$RelatorioTableProcessedTableManager get secaoId {
     final $_column = $_itemColumn<int>('secao_id')!;
@@ -5097,7 +5667,7 @@ final class $$VulnerabilidadeTableReferences
   static MultiTypedResultKey<$EvidenciaTable, List<EvidenciaData>>
   _evidenciaRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.evidencia,
-    aliasName: 'vulnerabilidade__id__evidencia__vulnerabilidade_id',
+    aliasName: 'vulnerabilidades__id__evidencias__vulnerabilidade_id',
   );
 
   $$EvidenciaTableProcessedTableManager get evidenciaRefs {
@@ -5179,6 +5749,16 @@ class $$VulnerabilidadeTableFilterComposer
 
   ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
     column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get anotacoes => $composableBuilder(
+    column: $table.anotacoes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5300,6 +5880,16 @@ class $$VulnerabilidadeTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get anotacoes => $composableBuilder(
+    column: $table.anotacoes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$RelatorioTableOrderingComposer get secaoId {
     final $$RelatorioTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5380,6 +5970,12 @@ class $$VulnerabilidadeTableAnnotationComposer
     column: $table.atualizadoEm,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get arquivado =>
+      $composableBuilder(column: $table.arquivado, builder: (column) => column);
+
+  GeneratedColumn<String> get anotacoes =>
+      $composableBuilder(column: $table.anotacoes, builder: (column) => column);
 
   $$RelatorioTableAnnotationComposer get secaoId {
     final $$RelatorioTableAnnotationComposer composer = $composerBuilder(
@@ -5473,6 +6069,8 @@ class $$VulnerabilidadeTableTableManager
                 Value<int> status = const Value.absent(),
                 Value<DateTime> criadoEm = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<bool> arquivado = const Value.absent(),
+                Value<String?> anotacoes = const Value.absent(),
               }) => VulnerabilidadeCompanion(
                 id: id,
                 identificador: identificador,
@@ -5487,6 +6085,8 @@ class $$VulnerabilidadeTableTableManager
                 status: status,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
+                arquivado: arquivado,
+                anotacoes: anotacoes,
               ),
           createCompanionCallback:
               ({
@@ -5503,6 +6103,8 @@ class $$VulnerabilidadeTableTableManager
                 required int status,
                 required DateTime criadoEm,
                 required DateTime atualizadoEm,
+                Value<bool> arquivado = const Value.absent(),
+                Value<String?> anotacoes = const Value.absent(),
               }) => VulnerabilidadeCompanion.insert(
                 id: id,
                 identificador: identificador,
@@ -5517,6 +6119,8 @@ class $$VulnerabilidadeTableTableManager
                 status: status,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
+                arquivado: arquivado,
+                anotacoes: anotacoes,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -5621,6 +6225,8 @@ typedef $$EvidenciaTableCreateCompanionBuilder =
       required int ordem,
       required DateTime criadoEm,
       required DateTime atualizadoEm,
+      Value<bool> arquivado,
+      Value<String?> anotacoes,
     });
 typedef $$EvidenciaTableUpdateCompanionBuilder =
     EvidenciaCompanion Function({
@@ -5634,6 +6240,8 @@ typedef $$EvidenciaTableUpdateCompanionBuilder =
       Value<int> ordem,
       Value<DateTime> criadoEm,
       Value<DateTime> atualizadoEm,
+      Value<bool> arquivado,
+      Value<String?> anotacoes,
     });
 
 final class $$EvidenciaTableReferences
@@ -5642,7 +6250,7 @@ final class $$EvidenciaTableReferences
 
   static $VulnerabilidadeTable _vulnerabilidadeIdTable(_$AppDatabase db) => db
       .vulnerabilidade
-      .createAlias('evidencia__vulnerabilidade_id__vulnerabilidade__id');
+      .createAlias('evidencias__vulnerabilidade_id__vulnerabilidades__id');
 
   $$VulnerabilidadeTableProcessedTableManager get vulnerabilidadeId {
     final $_column = $_itemColumn<int>('vulnerabilidade_id')!;
@@ -5710,6 +6318,16 @@ class $$EvidenciaTableFilterComposer
 
   ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
     column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get anotacoes => $composableBuilder(
+    column: $table.anotacoes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5791,6 +6409,16 @@ class $$EvidenciaTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get anotacoes => $composableBuilder(
+    column: $table.anotacoes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$VulnerabilidadeTableOrderingComposer get vulnerabilidadeId {
     final $$VulnerabilidadeTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5855,6 +6483,12 @@ class $$EvidenciaTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get arquivado =>
+      $composableBuilder(column: $table.arquivado, builder: (column) => column);
+
+  GeneratedColumn<String> get anotacoes =>
+      $composableBuilder(column: $table.anotacoes, builder: (column) => column);
+
   $$VulnerabilidadeTableAnnotationComposer get vulnerabilidadeId {
     final $$VulnerabilidadeTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -5917,6 +6551,8 @@ class $$EvidenciaTableTableManager
                 Value<int> ordem = const Value.absent(),
                 Value<DateTime> criadoEm = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<bool> arquivado = const Value.absent(),
+                Value<String?> anotacoes = const Value.absent(),
               }) => EvidenciaCompanion(
                 id: id,
                 identificador: identificador,
@@ -5928,6 +6564,8 @@ class $$EvidenciaTableTableManager
                 ordem: ordem,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
+                arquivado: arquivado,
+                anotacoes: anotacoes,
               ),
           createCompanionCallback:
               ({
@@ -5941,6 +6579,8 @@ class $$EvidenciaTableTableManager
                 required int ordem,
                 required DateTime criadoEm,
                 required DateTime atualizadoEm,
+                Value<bool> arquivado = const Value.absent(),
+                Value<String?> anotacoes = const Value.absent(),
               }) => EvidenciaCompanion.insert(
                 id: id,
                 identificador: identificador,
@@ -5952,6 +6592,8 @@ class $$EvidenciaTableTableManager
                 ordem: ordem,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
+                arquivado: arquivado,
+                anotacoes: anotacoes,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -6029,6 +6671,8 @@ typedef $$EscopoTableCreateCompanionBuilder =
       required String valor,
       required DateTime criadoEm,
       required DateTime atualizadoEm,
+      Value<bool> arquivado,
+      Value<String?> anotacoes,
     });
 typedef $$EscopoTableUpdateCompanionBuilder =
     EscopoCompanion Function({
@@ -6039,6 +6683,8 @@ typedef $$EscopoTableUpdateCompanionBuilder =
       Value<String> valor,
       Value<DateTime> criadoEm,
       Value<DateTime> atualizadoEm,
+      Value<bool> arquivado,
+      Value<String?> anotacoes,
     });
 
 final class $$EscopoTableReferences
@@ -6046,7 +6692,7 @@ final class $$EscopoTableReferences
   $$EscopoTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $RelatorioTable _relatorioIdTable(_$AppDatabase db) =>
-      db.relatorio.createAlias('escopo__relatorio_id__relatorios__id');
+      db.relatorio.createAlias('escopos__relatorio_id__relatorios__id');
 
   $$RelatorioTableProcessedTableManager get relatorioId {
     final $_column = $_itemColumn<int>('relatorio_id')!;
@@ -6099,6 +6745,16 @@ class $$EscopoTableFilterComposer
 
   ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
     column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get anotacoes => $composableBuilder(
+    column: $table.anotacoes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6165,6 +6821,16 @@ class $$EscopoTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get arquivado => $composableBuilder(
+    column: $table.arquivado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get anotacoes => $composableBuilder(
+    column: $table.anotacoes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$RelatorioTableOrderingComposer get relatorioId {
     final $$RelatorioTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -6221,6 +6887,12 @@ class $$EscopoTableAnnotationComposer
     column: $table.atualizadoEm,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get arquivado =>
+      $composableBuilder(column: $table.arquivado, builder: (column) => column);
+
+  GeneratedColumn<String> get anotacoes =>
+      $composableBuilder(column: $table.anotacoes, builder: (column) => column);
 
   $$RelatorioTableAnnotationComposer get relatorioId {
     final $$RelatorioTableAnnotationComposer composer = $composerBuilder(
@@ -6281,6 +6953,8 @@ class $$EscopoTableTableManager
                 Value<String> valor = const Value.absent(),
                 Value<DateTime> criadoEm = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<bool> arquivado = const Value.absent(),
+                Value<String?> anotacoes = const Value.absent(),
               }) => EscopoCompanion(
                 id: id,
                 identificador: identificador,
@@ -6289,6 +6963,8 @@ class $$EscopoTableTableManager
                 valor: valor,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
+                arquivado: arquivado,
+                anotacoes: anotacoes,
               ),
           createCompanionCallback:
               ({
@@ -6299,6 +6975,8 @@ class $$EscopoTableTableManager
                 required String valor,
                 required DateTime criadoEm,
                 required DateTime atualizadoEm,
+                Value<bool> arquivado = const Value.absent(),
+                Value<String?> anotacoes = const Value.absent(),
               }) => EscopoCompanion.insert(
                 id: id,
                 identificador: identificador,
@@ -6307,6 +6985,8 @@ class $$EscopoTableTableManager
                 valor: valor,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
+                arquivado: arquivado,
+                anotacoes: anotacoes,
               ),
           withReferenceMapper: (p0) => p0
               .map(
